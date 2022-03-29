@@ -1,6 +1,6 @@
-package pcd.ass01.seq;
+package model;
 
-public class P2d { 
+public class P2d {
 
     private double x, y;
 

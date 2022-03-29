@@ -1,8 +1,22 @@
-package pcd.ass01.seq;
+package controller;
+
+import model.Body;
+import model.Boundary;
+import model.P2d;
+import model.V2d;
+import view.SimulationView;
 
 import java.util.*;
 
 public class Simulator {
+
+	public static void main(String[] args) {
+
+		SimulationView viewer = new SimulationView(620, 620);
+
+		Simulator sim = new Simulator(viewer);
+		sim.execute(50000);
+	}
 
 	private SimulationView viewer;
 
@@ -108,7 +122,7 @@ public class Simulator {
 		bounds = new Boundary(-4.0, -4.0, 4.0, 4.0);
 		bodies = new ArrayList<Body>();
 		bodies.add(new Body(0, new P2d(-0.1, 0), new V2d(0,0), 1));
-		bodies.add(new Body(1, new P2d(0.1, 0), new V2d(0,0), 2));		
+		bodies.add(new Body(1, new P2d(0.1, 0), new V2d(0,0), 2));
 	}
 
 	private void testBodySet2_three_bodies() {

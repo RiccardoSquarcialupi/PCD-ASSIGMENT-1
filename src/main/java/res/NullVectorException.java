@@ -1,4 +1,4 @@
-package pcd.ass01.seq;
+package res;
 
 public class NullVectorException extends Exception {
 

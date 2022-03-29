@@ -1,5 +1,5 @@
-/*
- *   V2d.java
+package model;/*
+ *   model.V2d.java
  *
  * Copyright 2000-2001-2002  aliCE team at deis.unibo.it
  *
@@ -7,7 +7,8 @@
  * Use is subject to license terms.
  *
  */
-package pcd.ass01.seq;
+
+import res.NullVectorException;
 
 /**
  *

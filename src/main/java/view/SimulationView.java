@@ -1,4 +1,8 @@
-package pcd.ass01.seq;
+package view;
+
+import model.Body;
+import model.Boundary;
+import model.P2d;
 
 import java.awt.Graphics;
 import java.awt.Graphics2D;

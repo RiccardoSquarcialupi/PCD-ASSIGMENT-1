@@ -1,4 +1,7 @@
-package pcd.ass01.seq;
+package model;
+
+import res.InfiniteForceException;
+
 /*
  * This class represents a body
  * 
