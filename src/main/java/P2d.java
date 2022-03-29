@@ -1,6 +1,4 @@
-package pcd.ass01.seq;
-
-public class P2d { 
+public class P2d {
 
     private double x, y;
 

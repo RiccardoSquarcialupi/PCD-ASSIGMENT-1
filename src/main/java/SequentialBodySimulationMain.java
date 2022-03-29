@@ -1,5 +1,3 @@
-package pcd.ass01.seq;
-
 /**
  * Bodies simulation - legacy code: sequential, unstructured
  * 
