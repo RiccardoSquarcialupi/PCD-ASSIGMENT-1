@@ -12,6 +12,7 @@ import java.awt.RenderingHints;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.*;
 
 /**
@@ -75,7 +76,7 @@ public class SimulationView {
 
     public static class VisualiserPanel extends JPanel implements KeyListener {
         
-    	private ArrayList<Body> bodies;
+    	private CopyOnWriteArrayList<Body> bodies;
     	private Boundary bounds;
     	
     	private long nIter;
@@ -115,19 +116,33 @@ public class SimulationView {
     			g2.drawRect(x0, y0 - ht, wd, ht);
     			
 	    		bodies.forEach( b -> {
-	    			P2d p = b.getPos();
-			        int radius = (int) (10*scale);
-			        if (radius < 1) {
-			        	radius = 1;
-			        }
-			        g2.drawOval(getXcoord(p.getX()),getYcoord(p.getY()), radius, radius); 
-			    });		    
+					try {
+						new SwingWorker<Void, Void>() {
+							@Override
+							protected Void doInBackground() throws Exception {
+								drawPosition(g2,b);
+								return null;
+							}
+						}.doInBackground();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				});
 	    		String time = String.format("%.2f", vt);
 	    		g2.drawString("Bodies: " + bodies.size() + " - vt: " + time + " - nIter: " + nIter + " (UP for zoom in, DOWN for zoom out)", 2, 20);
     		}
         }
-        
-        private int getXcoord(double x) {
+
+		private void drawPosition(Graphics2D g2, Body b) {
+			P2d p = b.getPos();
+			int radius = (int) (10*scale);
+			if (radius < 1) {
+				radius = 1;
+			}
+			g2.drawOval(getXcoord(p.getX()),getYcoord(p.getY()), radius, radius);
+		}
+
+		private int getXcoord(double x) {
         	return (int)(dx + x*dx*scale);
         }
 
@@ -136,7 +151,7 @@ public class SimulationView {
         }
         
         public void display(ArrayList<Body> bodies, double vt, long iter, Boundary bounds){
-            this.bodies = bodies;
+            this.bodies = new CopyOnWriteArrayList<>(bodies);
             this.bounds = bounds;
             this.vt = vt;
             this.nIter = iter;
