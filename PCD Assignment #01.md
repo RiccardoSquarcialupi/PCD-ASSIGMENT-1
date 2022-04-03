@@ -5,7 +5,7 @@ Nel repository del corso (package pcd.ass01.seq)  è fornito il codice di un pro
 * una forza di attrito, per cui su ogni corpo bi che si muove ad una velocità vi è esercitata una forza FRi = - kfri* vi che si oppone al moto, quindi in direzione opposta alla sua velocità, dove kfri è una costante data.
 
 
-Il programma è sequenziale, non strutturato.  L’algoritmo che definisce il comportamento del simulatore - contenuta nella classe Simulator - in pseudocodice è il seguente:
+Il programma è sequenziale, non strutturato.  L’algoritmo che definisce il comportamento del simulatore - contenuta nella classe controller.Simulator - in pseudocodice è il seguente:
 
 
 vt = 0;     /* virtual time */         
@@ -28,9 +28,9 @@ La semplice GUI fornita nel programma semplicemente visualizza l’andamento del
 
 
 Nel programma: 
-* la classe Body rappresenta una corpo e tiene traccia della sua posizione,  velocità, aggiornate ad ogni frame, oltre che della sua massa, nonché fornisce metodi per calcolo forze esercitata da un altro corpo, forza attrito e per aggiornare velocità e posizione;
+* la classe model.Body rappresenta una corpo e tiene traccia della sua posizione,  velocità, aggiornate ad ogni frame, oltre che della sua massa, nonché fornisce metodi per calcolo forze esercitata da un altro corpo, forza attrito e per aggiornare velocità e posizione;
 * la classe Simulation rappresenta il motore della simulazione, che si occupa della generazione dei corpi e dell'esecuzione del simulation loop
-* la classe SimulationView si occupa della visualizzazione di ogni frame della simulazione.
+* la classe view.SimulationView si occupa della visualizzazione di ogni frame della simulazione.
 
 
 Alcuni aspetti rilevanti in merito al comportamento del programma e alla natura del problema:

@@ -1,3 +1,10 @@
+<<<<<<<< HEAD:src/main/java/Body.java
+========
+package model;
+
+import res.InfiniteForceException;
+
+>>>>>>>> origin/main:src/main/java/model/Body.java
 /*
  * This class represents a body
  * 

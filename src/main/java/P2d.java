@@ -1,3 +1,8 @@
+<<<<<<<< HEAD:src/main/java/P2d.java
+========
+package model;
+
+>>>>>>>> origin/main:src/main/java/model/P2d.java
 public class P2d {
 
     private double x, y;

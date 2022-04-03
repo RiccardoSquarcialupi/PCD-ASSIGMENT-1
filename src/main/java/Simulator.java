@@ -1,8 +1,10 @@
+import gov.nasa.jpf.vm.Verify;
+
 import java.util.*;
 
 public class Simulator {
 
-    private SimulationView viewer;
+    //private SimulationView viewer;
 
     /* bodies in the field */
     ArrayList<Body> bodies;
@@ -18,15 +20,15 @@ public class Simulator {
     /* virtual time step */
     double dt;
 
-    public Simulator(SimulationView viewer) {
-        this.viewer = viewer;
+    public Simulator(/*SimulationView viewer*/) {
+        //this.viewer = viewer;
 
         /* initializing boundary and bodies */
 
         // testBodySet1_two_bodies();
         // testBodySet2_three_bodies();
-        // testBodySet3_some_bodies();
-        testBodySet4_many_bodies();
+        testBodySet3_some_bodies();
+        //testBodySet4_many_bodies();
         partitionateBodies();
     }
 
@@ -80,15 +82,18 @@ public class Simulator {
                         /* check collisions with boundaries */
                         body.checkAndSolveBoundaryCollision(bounds);
                     }
+
                 }
             }
 
             var threads = new LinkedList<Thread>();
+            Verify.beginAtomic();
             for (var partition : partitions) {
                 var thread = new myThread(partition);
                 thread.start();
                 threads.add(thread);
             }
+            Verify.endAtomic();
             threads.forEach(thread -> {
                 try {
                     thread.join();
@@ -103,7 +108,7 @@ public class Simulator {
 
             /* display current stage */
 
-            viewer.display(bodies, vt, iter, bounds);
+            //viewer.display(bodies, vt, iter, bounds);
 
         }
     }
@@ -147,7 +152,7 @@ public class Simulator {
 
     private void testBodySet3_some_bodies() {
         bounds = new Boundary(-4.0, -4.0, 4.0, 4.0);
-        int nBodies = 100;
+        int nBodies = 24;
         Random rand = new Random(System.currentTimeMillis());
         bodies = new ArrayList<Body>();
         for (int i = 0; i < nBodies; i++) {

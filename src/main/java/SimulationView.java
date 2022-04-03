@@ -1,3 +1,12 @@
+<<<<<<<< HEAD:src/main/java/SimulationView.java
+========
+package view;
+
+import model.Body;
+import model.Boundary;
+import model.P2d;
+
+>>>>>>>> origin/main:src/main/java/view/SimulationView.java
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;

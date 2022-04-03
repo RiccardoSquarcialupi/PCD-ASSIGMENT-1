@@ -1,5 +1,5 @@
-/*
- *   V2d.java
+package model;/*
+ *   model.V2d.java
  *
  * Copyright 2000-2001-2002  aliCE team at deis.unibo.it
  *
@@ -7,6 +7,11 @@
  * Use is subject to license terms.
  *
  */
+<<<<<<<< HEAD:src/main/java/V2d.java
+========
+
+import res.NullVectorException;
+>>>>>>>> origin/main:src/main/java/model/V2d.java
 
 /**
  *
