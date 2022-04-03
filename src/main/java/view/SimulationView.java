@@ -2,175 +2,158 @@ package view;
 
 import model.Body;
 import model.Boundary;
-import model.P2d;
+import model.DrawPositionWorker;
 
-import java.awt.Graphics;
-import java.awt.Graphics2D;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.RenderingHints;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
-import javax.swing.*;
 
 /**
  * Simulation view
  *
  * @author aricci
- *
  */
 public class SimulationView {
-        
-	private VisualiserFrame frame;
-	
+
+    private final VisualiserFrame frame;
+
     /**
      * Creates a view of the specified size (in pixels)
-     * 
-     * @param w
-     * @param h
      */
-    public SimulationView(int w, int h){
-    	frame = new VisualiserFrame(w,h);
+    public SimulationView(int w, int h) {
+        frame = new VisualiserFrame(w, h);
     }
-        
-    public void display(ArrayList<Body> bodies, double vt, long iter, Boundary bounds){
- 	   frame.display(bodies, vt, iter, bounds); 
+
+    public void display(ArrayList<Body> bodies, double vt, long iter, Boundary bounds) {
+        frame.display(bodies, vt, iter, bounds);
     }
-    
+
     public static class VisualiserFrame extends JFrame {
 
-        private VisualiserPanel panel;
+        private final VisualiserPanel panel;
 
-        public VisualiserFrame(int w, int h){
+        public VisualiserFrame(int w, int h) {
             setTitle("Bodies Simulation");
-            setSize(w,h);
+            setSize(w, h);
             setResizable(false);
-            panel = new VisualiserPanel(w,h);
+            panel = new VisualiserPanel(w, h);
             getContentPane().add(panel);
-            addWindowListener(new WindowAdapter(){
-    			public void windowClosing(WindowEvent ev){
-    				System.exit(-1);
-    			}
-    			public void windowClosed(WindowEvent ev){
-    				System.exit(-1);
-    			}
-    		});
-    		this.setVisible(true);
+            addWindowListener(new WindowAdapter() {
+                public void windowClosing(WindowEvent ev) {
+                    System.exit(0);
+                }
+
+                public void windowClosed(WindowEvent ev) {
+                    System.exit(0);
+                }
+            });
+            this.setVisible(true);
         }
-        
-        public void display(ArrayList<Body> bodies, double vt, long iter, Boundary bounds){
-        	try {
-	        	SwingUtilities.invokeAndWait(() -> {
-	        		panel.display(bodies, vt, iter, bounds);
-	            	repaint();
-	        	});
-        	} catch (Exception ex) {}
-        };
-        
-        public void updateScale(double k) {
-        	panel.updateScale(k);
-        }    	
+
+        public void display(ArrayList<Body> bodies, double vt, long iter, Boundary bounds) {
+            try {
+                SwingUtilities.invokeAndWait(() -> {
+                    panel.display(bodies, vt, iter, bounds);
+                    repaint();
+                });
+            } catch (Exception ex) {
+                //silently ignored
+            }
+        }
+
     }
 
     public static class VisualiserPanel extends JPanel implements KeyListener {
-        
-    	private CopyOnWriteArrayList<Body> bodies;
-    	private Boundary bounds;
-    	
-    	private long nIter;
-    	private double vt;
-    	private double scale = 1;
-    	
-        private long dx;
-        private long dy;
-        
-        public VisualiserPanel(int w, int h){
-            setSize(w,h);
-            dx = w/2 - 20;
-            dy = h/2 - 20;
-			this.addKeyListener(this);
-			setFocusable(true);
-			setFocusTraversalKeysEnabled(false);
-			requestFocusInWindow(); 
+
+        private CopyOnWriteArrayList<Body> bodies;
+        private Boundary bounds;
+
+        private long nIter;
+        private double vt;
+        private double scale = 1;
+
+        private final long dx;
+        private final long dy;
+
+        public VisualiserPanel(int w, int h) {
+            setSize(w, h);
+            dx = w / 2 - 20;
+            dy = h / 2 - 20;
+            this.addKeyListener(this);
+            setFocusable(true);
+            setFocusTraversalKeysEnabled(false);
+            requestFocusInWindow();
         }
 
-        public void paint(Graphics g){    		    		
-    		if (bodies != null) {
-        		Graphics2D g2 = (Graphics2D) g;
-        		
-        		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-        		          RenderingHints.VALUE_ANTIALIAS_ON);
-        		g2.setRenderingHint(RenderingHints.KEY_RENDERING,
-        		          RenderingHints.VALUE_RENDER_QUALITY);
-        		g2.clearRect(0,0,this.getWidth(),this.getHeight());
+        public void paint(Graphics g) {
+            if (bodies != null) {
+                Graphics2D g2 = (Graphics2D) g;
 
-        		
-        		int x0 = getXcoord(bounds.getX0());
-        		int y0 = getYcoord(bounds.getY0());
-        		
-        		int wd = getXcoord(bounds.getX1()) - x0;
-        		int ht = y0 - getYcoord(bounds.getY1());
-        		
-    			g2.drawRect(x0, y0 - ht, wd, ht);
-    			
-	    		bodies.forEach( b -> {
-					try {
-						new SwingWorker<Void, Void>() {
-							@Override
-							protected Void doInBackground() throws Exception {
-								drawPosition(g2,b);
-								return null;
-							}
-						}.doInBackground();
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				});
-	    		String time = String.format("%.2f", vt);
-	    		g2.drawString("Bodies: " + bodies.size() + " - vt: " + time + " - nIter: " + nIter + " (UP for zoom in, DOWN for zoom out)", 2, 20);
-    		}
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                        RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setRenderingHint(RenderingHints.KEY_RENDERING,
+                        RenderingHints.VALUE_RENDER_QUALITY);
+                g2.clearRect(0, 0, this.getWidth(), this.getHeight());
+
+
+                int x0 = getXCord(bounds.getX0());
+                int y0 = getYCord(bounds.getY0());
+
+                int wd = getXCord(bounds.getX1()) - x0;
+                int ht = y0 - getYCord(bounds.getY1());
+
+                g2.drawRect(x0, y0 - ht, wd, ht);
+
+                bodies.forEach(b -> {
+                    try {
+                        new DrawPositionWorker(g2, b, scale, dx, dy);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+                String time = String.format("%.2f", vt);
+                g2.drawString("Bodies: " + bodies.size() + " - vt: " + time + " - nIter: " + nIter + " (UP for zoom in, DOWN for zoom out)", 2, 20);
+            }
         }
 
-		private void drawPosition(Graphics2D g2, Body b) {
-			P2d p = b.getPos();
-			int radius = (int) (10*scale);
-			if (radius < 1) {
-				radius = 1;
-			}
-			g2.drawOval(getXcoord(p.getX()),getYcoord(p.getY()), radius, radius);
-		}
 
-		private int getXcoord(double x) {
-        	return (int)(dx + x*dx*scale);
+        private int getXCord(double x) {
+            return (int) (dx + x * dx * scale);
         }
 
-        private int getYcoord(double y) {
-        	return (int)(dy - y*dy*scale);
+        private int getYCord(double y) {
+            return (int) (dy - y * dy * scale);
         }
-        
-        public void display(ArrayList<Body> bodies, double vt, long iter, Boundary bounds){
+
+        public void display(ArrayList<Body> bodies, double vt, long iter, Boundary bounds) {
             this.bodies = new CopyOnWriteArrayList<>(bodies);
             this.bounds = bounds;
             this.vt = vt;
             this.nIter = iter;
         }
-        
+
         public void updateScale(double k) {
-        	scale *= k;
+            scale *= k;
         }
 
-		@Override
-		public void keyPressed(KeyEvent e) {
-				if (e.getKeyCode() == 38){  		/* KEY UP */
-					scale *= 1.1;
-				} else if (e.getKeyCode() == 40){  	/* KEY DOWN */
-					scale *= 0.9;  
-				} 
-		}
+        @Override
+        public void keyPressed(KeyEvent e) {
+            if (e.getKeyCode() == 38) {        /* KEY UP */
+                scale *= 1.1;
+            } else if (e.getKeyCode() == 40) {    /* KEY DOWN */
+                scale *= 0.9;
+            }
+        }
 
-		public void keyReleased(KeyEvent e) {}
-		public void keyTyped(KeyEvent e) {}
+        public void keyReleased(KeyEvent e) {
+        }
+
+        public void keyTyped(KeyEvent e) {
+        }
     }
 }
