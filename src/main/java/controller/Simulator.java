@@ -11,7 +11,7 @@ import java.util.Random;
 
 public class Simulator {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         SimulationView viewer = new SimulationView(620, 620);
         Simulator sim = new Simulator(viewer);
         sim.execute(50000);
@@ -37,7 +37,7 @@ public class Simulator {
         partitionateBodies();
     }
 
-    public void execute(long nSteps) {
+    public void execute(long nSteps) throws InterruptedException {
         /* init virtual time */
 
         /* virtual time */
@@ -46,37 +46,39 @@ public class Simulator {
 
         long iter = 0;
 
+        var threads = new LinkedList<Thread>();
+        var barrier = new Barrier(this, partitions.size());
+        //Verify.beginAtomic();
+        for (var partition : partitions) {
+            var thread = new SimulatorSubTask(barrier, partition, bounds, dt);
+            thread.start();
+            threads.add(thread);
+        }
+        //Verify.endAtomic();
         /* simulation loop */
         while (iter < nSteps) {
-            var threads = new LinkedList<Thread>();
-            //Verify.beginAtomic();
-            for (var partition : partitions) {
-                var thread = new SimulatorSubTask(partition, bounds, dt);
-                thread.start();
-                threads.add(thread);
-            }
-            //Verify.endAtomic();
-            threads.forEach(thread -> {
-                try {
-                    thread.join();
-                } catch (InterruptedException ignored) {
-                }
-            });
-
+            await();
             /* update virtual time */
-
             vt = vt + dt;
             iter++;
-
             /* display current stage */
-
             viewer.display(bodies, vt, iter, bounds);
 
+            //barrier.wakeAll();
         }
+        threads.forEach(Thread::interrupt);
+    }
+
+    public synchronized void await() throws InterruptedException {
+        wait();
+    }
+
+    public synchronized void awake(){
+        notify();
     }
 
     private void partitionateBodies(){
-        int cores = Runtime.getRuntime().availableProcessors();
+        int cores = Runtime.getRuntime().availableProcessors()/2;
         int partitionSize = (int) Math.floor((float)bodies.size()/cores);
         for (int i = 0; i < bodies.size(); i += partitionSize) {
             partitions.add(bodies.subList(i,
