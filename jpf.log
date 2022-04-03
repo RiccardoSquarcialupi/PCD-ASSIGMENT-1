@@ -1,0 +1,43 @@
+//WITH SYNCHRONIZED
+====================================================== system under test
+SequentialBodySimulationMain.main()
+
+====================================================== search started: 30/03/22 11.47
+
+====================================================== results
+no errors detected
+
+====================================================== statistics
+elapsed time:       00:02:00
+states:             new=144261,visited=71185,backtracked=215446,end=2
+search:             maxDepth=14258,constraints=0
+choice generators:  thread=144261 (signal=0,lock=3001,sharedRef=65180,threadApi=71185,reschedule=4890), data=0
+heap:               new=15237442,released=15114374,maxLive=546,gcCycles=212446
+instructions:       2976234821
+max memory:         3656MB
+loaded code:        classes=92,methods=2141
+
+====================================================== search finished: 30/03/22 11.49
+
+
+
+//NO SYNCHRONIZED
+====================================================== system under test
+SequentialBodySimulationMain.main()
+
+====================================================== search started: 30/03/22 11.50
+
+====================================================== results
+no errors detected
+
+====================================================== statistics
+elapsed time:       00:01:55
+states:             new=138261,visited=68185,backtracked=206446,end=2
+search:             maxDepth=13658,constraints=0
+choice generators:  thread=138261 (signal=0,lock=1,sharedRef=65180,threadApi=68185,reschedule=4890), data=0
+heap:               new=14609137,released=14492374,maxLive=546,gcCycles=206446
+instructions:       2853626261
+max memory:         3658MB
+loaded code:        classes=92,methods=2141
+
+====================================================== search finished: 30/03/22 11.52

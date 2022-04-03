@@ -1,25 +1,24 @@
 package controller;
 
-import model.Body;
-import model.Boundary;
-import model.P2d;
-import model.V2d;
+import gov.nasa.jpf.vm.Verify;
+import model.*;
 import view.SimulationView;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
 
 public class Simulator {
 
     public static void main(String[] args) {
-
         SimulationView viewer = new SimulationView(620, 620);
-
         Simulator sim = new Simulator(viewer);
         sim.execute(50000);
     }
 
     private final SimulationView viewer;
+    private final List<List<Body>> partitions = new LinkedList<>();
 
     /* bodies in the field */
     ArrayList<Body> bodies;
@@ -34,12 +33,11 @@ public class Simulator {
         this.viewer = viewer;
 
         /* initializing boundary and bodies */
-
         testBodySet4_many_bodies();
+        partitionateBodies();
     }
 
     public void execute(long nSteps) {
-
         /* init virtual time */
 
         /* virtual time */
@@ -49,33 +47,21 @@ public class Simulator {
         long iter = 0;
 
         /* simulation loop */
-
         while (iter < nSteps) {
-
-            /* update bodies velocity */
-
-            for (Body b : bodies) {
-                /* compute total force on bodies */
-                V2d totalForce = computeTotalForceOnBody(b);
-
-                /* compute instant acceleration */
-                V2d acc = new V2d(totalForce).scalarMul(1.0 / b.getMass());
-
-                /* update velocity */
-                b.updateVelocity(acc, dt);
+            var threads = new LinkedList<Thread>();
+            //Verify.beginAtomic();
+            for (var partition : partitions) {
+                var thread = new SimulatorSubTask(partition, bounds, dt);
+                thread.start();
+                threads.add(thread);
             }
-
-            /* compute bodies new pos */
-
-            for (Body b : bodies) {
-                b.updatePos(dt);
-            }
-
-            /* check collisions with boundaries */
-
-            for (Body b : bodies) {
-                b.checkAndSolveBoundaryCollision(bounds);
-            }
+            //Verify.endAtomic();
+            threads.forEach(thread -> {
+                try {
+                    thread.join();
+                } catch (InterruptedException ignored) {
+                }
+            });
 
             /* update virtual time */
 
@@ -89,26 +75,13 @@ public class Simulator {
         }
     }
 
-    private V2d computeTotalForceOnBody(Body b) {
-
-        V2d totalForce = new V2d(0, 0);
-
-        /* compute total repulsive force */
-
-        for (Body otherBody : bodies) {
-            if (!b.equals(otherBody)) {
-                try {
-                    V2d forceByOtherBody = b.computeRepulsiveForceBy(otherBody);
-                    totalForce.sum(forceByOtherBody);
-                } catch (Exception ignored) {
-                }
-            }
+    private void partitionateBodies(){
+        int cores = Runtime.getRuntime().availableProcessors();
+        int partitionSize = (int) Math.floor((float)bodies.size()/cores);
+        for (int i = 0; i < bodies.size(); i += partitionSize) {
+            partitions.add(bodies.subList(i,
+                    Math.min(i + partitionSize, bodies.size())));
         }
-
-        /* add friction force */
-        totalForce.sum(b.getCurrentFrictionForce());
-
-        return totalForce;
     }
 
     private void testBodySet1_two_bodies() {

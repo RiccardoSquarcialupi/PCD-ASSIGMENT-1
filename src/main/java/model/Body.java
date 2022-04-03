@@ -49,7 +49,7 @@ public class Body {
      *
      * @param dt time elapsed
      */
-    public void updatePos(double dt) {
+    synchronized public void updatePos(double dt) {
         pos.sum(new V2d(vel).scalarMul(dt));
     }
 
@@ -76,7 +76,7 @@ public class Body {
      * @param b the body which we calculate the distance from
      * @return the calculated distance
      */
-    public double getDistanceFrom(Body b) {
+    synchronized public double getDistanceFrom(Body b) {
         double dx = pos.getX() - b.getPos().getX();
         double dy = pos.getY() - b.getPos().getY();
         return Math.sqrt(dx * dx + dy * dy);
@@ -89,7 +89,7 @@ public class Body {
      * @return
      * @throws InfiniteForceException
      */
-    public V2d computeRepulsiveForceBy(Body b) throws InfiniteForceException {
+    synchronized public V2d computeRepulsiveForceBy(Body b) throws InfiniteForceException {
         double dist = getDistanceFrom(b);
         if (dist > 0) {
             try {
@@ -117,7 +117,7 @@ public class Body {
      *
      * @param bounds
      */
-    public void checkAndSolveBoundaryCollision(Boundary bounds) {
+    synchronized public void checkAndSolveBoundaryCollision(Boundary bounds) {
         double x = pos.getX();
         double y = pos.getY();
 
