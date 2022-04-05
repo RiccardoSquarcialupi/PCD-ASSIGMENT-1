@@ -1,6 +1,5 @@
 package controller;
 
-import gov.nasa.jpf.vm.Verify;
 import model.*;
 import view.SimulationView;
 
@@ -12,25 +11,24 @@ import java.util.Random;
 public class Simulator {
 
     public static void main(String[] args) throws InterruptedException {
-        SimulationView viewer = new SimulationView(620, 620);
-        Simulator sim = new Simulator(viewer);
+        Simulator sim = new Simulator();
         sim.execute(50000);
     }
 
-    private final SimulationView viewer;
     private final List<List<Body>> partitions = new LinkedList<>();
-
     /* bodies in the field */
     ArrayList<Body> bodies;
-
+    boolean btnClicked;
     /* boundary of the field */
     private Boundary bounds;
 
     /* virtual time step */
     double dt;
 
-    public Simulator(SimulationView viewer) {
-        this.viewer = viewer;
+    SimulationView viewer;
+    public Simulator() {
+        btnClicked=false;
+        viewer = new SimulationView(620, 620,this);
 
         /* initializing boundary and bodies */
         testBodySet4_many_bodies();
@@ -57,14 +55,15 @@ public class Simulator {
         //Verify.endAtomic();
         /* simulation loop */
         while (iter < nSteps) {
-            await();
-            /* update virtual time */
-            vt = vt + dt;
-            iter++;
-            /* display current stage */
-            viewer.display(bodies, vt, iter, bounds);
-
-            //barrier.wakeAll();
+            while(btnClicked){
+                await();
+                /* update virtual time */
+                vt = vt + dt;
+                iter++;
+                /* display current stage */
+                //barrier.wakeAll();
+                viewer.display(bodies, vt, iter, bounds);
+            }
         }
         threads.forEach(Thread::interrupt);
     }
@@ -125,4 +124,7 @@ public class Simulator {
     }
 
 
+    public void setBtnClicked(boolean b) {
+        this.btnClicked=b;
+    }
 }

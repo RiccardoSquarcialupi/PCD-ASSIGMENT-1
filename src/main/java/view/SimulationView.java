@@ -1,15 +1,13 @@
 package view;
 
+import controller.Simulator;
 import model.Body;
 import model.Boundary;
 import model.DrawPositionWorker;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -25,8 +23,8 @@ public class SimulationView {
     /**
      * Creates a view of the specified size (in pixels)
      */
-    public SimulationView(int w, int h) {
-        frame = new VisualiserFrame(w, h);
+    public SimulationView(int w, int h, Simulator simulator) {
+        frame = new VisualiserFrame(w, h,simulator);
     }
 
     public void display(ArrayList<Body> bodies, double vt, long iter, Boundary bounds) {
@@ -37,12 +35,22 @@ public class SimulationView {
 
         private final VisualiserPanel panel;
 
-        public VisualiserFrame(int w, int h) {
+        public VisualiserFrame(int w, int h, Simulator simulator) {
             setTitle("Bodies Simulation");
             setSize(w, h);
             setResizable(false);
+            JPanel mainJPanel = new JPanel(new BorderLayout());
+            JPanel btnJPanel = new JPanel();
+            getContentPane().add(mainJPanel);
+            JButton btnStart = new JButton("START");
+            btnStart.addActionListener(e -> simulator.setBtnClicked(true));
+            JButton btnStop = new JButton("STOP");
+            btnStop.addActionListener(e -> simulator.setBtnClicked(false));
             panel = new VisualiserPanel(w, h);
-            getContentPane().add(panel);
+            mainJPanel.add(BorderLayout.SOUTH,btnJPanel);
+            mainJPanel.add(BorderLayout.CENTER,panel);
+            btnJPanel.add(btnStart);
+            btnJPanel.add(btnStop);
             addWindowListener(new WindowAdapter() {
                 public void windowClosing(WindowEvent ev) {
                     System.exit(0);
@@ -58,8 +66,19 @@ public class SimulationView {
         public void display(ArrayList<Body> bodies, double vt, long iter, Boundary bounds) {
             try {
                 SwingUtilities.invokeAndWait(() -> {
-                    panel.display(bodies, vt, iter, bounds);
-                    repaint();
+                    try {
+                        new SwingWorker<Void, Void>() {
+                            @Override
+                            protected Void doInBackground() throws Exception {
+                                panel.display(bodies, vt, iter, bounds);
+                                repaint();
+                                return null;
+                            }
+                        }.doInBackground();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
                 });
             } catch (Exception ex) {
                 //silently ignored
