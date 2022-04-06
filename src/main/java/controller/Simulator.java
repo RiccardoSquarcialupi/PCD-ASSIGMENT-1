@@ -1,5 +1,6 @@
 package controller;
 
+import gov.nasa.jpf.vm.Verify;
 import model.*;
 import view.SimulationView;
 
@@ -7,82 +8,110 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 
 public class Simulator {
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws InterruptedException, BrokenBarrierException {
         Simulator sim = new Simulator();
-        sim.execute(50000);
+        sim.execute(500000);
     }
 
-    private final List<List<Body>> partitions = new LinkedList<>();
-    /* bodies in the field */
-    ArrayList<Body> bodies;
+    private final SimulationView viewer;
+    private List<List<Body>> partitions = new LinkedList<>();
+    private CyclicBarrier barrier;
+    private boolean shouldAwake = false;
     boolean btnClicked;
+
+    /* bodies in the field */
+    private ArrayList<Body> bodies;
     /* boundary of the field */
     private Boundary bounds;
 
     /* virtual time step */
-    double dt;
+    private double dt;
+    private long nSteps;
+    private long iter = 0;
 
-    SimulationView viewer;
+
     public Simulator() {
         btnClicked=false;
         viewer = new SimulationView(620, 620,this);
-
         /* initializing boundary and bodies */
         testBodySet4_many_bodies();
-        partitionateBodies();
     }
 
-    public void execute(long nSteps) throws InterruptedException {
-        /* init virtual time */
+    public Boundary getBounds() {
+        return bounds;
+    }
 
+    public double getDt() {
+        return dt;
+    }
+
+    public long getnSteps() {
+        return nSteps;
+    }
+
+    public long getIter() {
+        return iter;
+    }
+
+    public CyclicBarrier getBarrier() {
+        return barrier;
+    }
+
+    public void execute(long nSteps) throws InterruptedException, BrokenBarrierException {
+        this.nSteps = nSteps;
+        int cores = Runtime.getRuntime().availableProcessors()/2;
+        //cores = 1;
+        partitions = partition(bodies, cores);
+        barrier = new CyclicBarrier(partitions.size()+1);
+        /* init virtual time */
         /* virtual time */
         double vt = 0;
         dt = 0.001;
-
         long iter = 0;
 
-        var threads = new LinkedList<Thread>();
-        var barrier = new Barrier(this, partitions.size());
         //Verify.beginAtomic();
         for (var partition : partitions) {
-            var thread = new SimulatorSubTask(barrier, partition, bounds, dt);
+            var thread = new SimulatorSubTask(partition, this);
             thread.start();
-            threads.add(thread);
         }
         //Verify.endAtomic();
         /* simulation loop */
+        int counter = 0;
+        var startTime = System.currentTimeMillis();
         while (iter < nSteps) {
-            while(btnClicked){
-                await();
-                /* update virtual time */
-                vt = vt + dt;
-                iter++;
-                /* display current stage */
-                //barrier.wakeAll();
+            while(!btnClicked){
+                Thread.sleep(1000);
+            }
+            barrier.await();
+            /* update virtual time */
+            vt = vt + dt;
+            iter++;
+            /* display current stage */
+            if(counter++ > 1000){
                 viewer.display(bodies, vt, iter, bounds);
+                counter = 0;
             }
         }
-        threads.forEach(Thread::interrupt);
+        var endTime = System.currentTimeMillis();
+        System.out.format("Total time with %d cores: %d\n",cores,endTime-startTime);
+        System.exit(0);
     }
 
-    public synchronized void await() throws InterruptedException {
-        wait();
-    }
-
-    public synchronized void awake(){
-        notify();
-    }
-
-    private void partitionateBodies(){
-        int cores = Runtime.getRuntime().availableProcessors()/2;
-        int partitionSize = (int) Math.floor((float)bodies.size()/cores);
-        for (int i = 0; i < bodies.size(); i += partitionSize) {
-            partitions.add(bodies.subList(i,
-                    Math.min(i + partitionSize, bodies.size())));
+    private <T> List<List<T>> partition(List<T> list, int n)
+    {
+        List<List<T>> partitions = new ArrayList<>();
+        for(int i = 0; i < n; i++){
+            int from = i*(list.size()/n);
+            int to = from+(list.size()/n);
+            if(to > list.size()) to = list.size();
+            partitions.add(list.subList(from, to));
         }
+        return partitions;
     }
 
     private void testBodySet1_two_bodies() {
@@ -108,7 +137,7 @@ public class Simulator {
 
     private void testBodySet4_many_bodies() {
         bounds = new Boundary(-6.0, -6.0, 6.0, 6.0);
-        int nBodies = 1000;
+        int nBodies = 5000;
         testBodySet(nBodies);
     }
 

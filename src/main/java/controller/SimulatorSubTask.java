@@ -1,29 +1,37 @@
-package model;
+package controller;
 
 import controller.Simulator;
+import model.Body;
+import model.Boundary;
+import model.V2d;
 
 import java.util.List;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Semaphore;
 
 import static gov.nasa.jpf.vm.Verify.println;
 
 public class SimulatorSubTask extends Thread{
 
-    private final Barrier barrier;
     private final List<Body> bodies;
-    private final Boundary bounds;
-    private final double dt;
+    private final Simulator master;
 
-    public SimulatorSubTask(Barrier barrier, List<Body> bodies, Boundary bounds, double dt) {
-        this.barrier = barrier;
+    public SimulatorSubTask(List<Body> bodies, Simulator master) {
         this.bodies = bodies;
-        this.bounds = bounds;
-        this.dt = dt;
+        this.master = master;
     }
 
     @Override
     public void run() {
-        while(true){
+        while(master.getIter() < master.getnSteps()){
+            while(!master.btnClicked){
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
             for(var body : bodies){
                 /* compute total force on bodies */
                 V2d totalForce = computeTotalForceOnBody(body);
@@ -31,16 +39,16 @@ public class SimulatorSubTask extends Thread{
                 /* compute instant acceleration */
                 V2d acc = new V2d(totalForce).scalarMul(1.0 / body.getMass());
                 /* update velocity */
-                body.updateVelocity(acc, dt);
+                body.updateVelocity(acc, master.getDt());
 
                 /* compute bodies new pos */
-                body.updatePos(dt);
+                body.updatePos(master.getDt());
 
                 /* check collisions with boundaries */
-                body.checkAndSolveBoundaryCollision(bounds);
+                body.checkAndSolveBoundaryCollision(master.getBounds());
                 try {
-                    barrier.hitAndWait();
-                } catch (InterruptedException e) {
+                    master.getBarrier().await();
+                } catch (InterruptedException | BrokenBarrierException e) {
                     e.printStackTrace();
                 }
             }
