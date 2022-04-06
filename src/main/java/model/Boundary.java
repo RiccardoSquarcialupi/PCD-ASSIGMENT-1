@@ -1,9 +1,11 @@
 package model;
 
+import model.interfaces.BoundaryInterface;
+
 /**
  * model.Boundary of the field where bodies move.
  */
-public class Boundary {
+public class Boundary implements BoundaryInterface {
     private final double x0;
     private final double y0;
     private final double x1;
@@ -17,21 +19,25 @@ public class Boundary {
     }
 
 
+    @Override
     public double getX0() {
         return x0;
     }
 
 
+    @Override
     public double getX1() {
         return x1;
     }
 
 
+    @Override
     public double getY0() {
         return y0;
     }
 
 
+    @Override
     public double getY1() {
         return y1;
     }

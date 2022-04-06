@@ -8,13 +8,14 @@ package model;/*
  *
  */
 
+import model.interfaces.V2dInterface;
 import res.NullVectorException;
 
 /**
  * 2-dimensional vector
  * objects are completely state-less
  */
-public class V2d {
+public class V2d implements V2dInterface {
 
     public double x, y;
 
@@ -33,18 +34,20 @@ public class V2d {
         this.y = to.getY() - from.getY();
     }
 
+    @Override
     public V2d scalarMul(double k) {
         x *= k;
         y *= k;
         return this;
     }
 
-    public V2d sum(V2d v) {
+    @Override
+    public void sum(V2d v) {
         x += v.x;
         y += v.y;
-        return this;
     }
 
+    @Override
     public V2d normalize() throws NullVectorException {
         double mod = Math.sqrt(x * x + y * y);
         if (mod > 0) {
@@ -57,15 +60,18 @@ public class V2d {
 
     }
 
+    @Override
     public void change(double x, double y) {
         this.x = x;
         this.y = y;
     }
 
+    @Override
     public double getX() {
         return x;
     }
 
+    @Override
     public double getY() {
         return y;
     }

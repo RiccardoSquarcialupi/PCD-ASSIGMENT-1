@@ -1,9 +1,10 @@
 package model;
 
-import javax.swing.*;
+import model.interfaces.BasicSwingWorker;
+
 import java.awt.*;
 
-public class DrawPositionWorker extends SwingWorker<Void, Void> {
+public class DrawPositionWorker extends BasicSwingWorker {
 
     Graphics2D g2;
     Body b;
@@ -21,7 +22,7 @@ public class DrawPositionWorker extends SwingWorker<Void, Void> {
     }
 
     @Override
-    protected Void doInBackground() throws Exception {
+    public Void doInBackground() throws Exception {
         P2d p = b.getPos();
         int radius = (int) (10 * scale);
         if (radius < 1) {

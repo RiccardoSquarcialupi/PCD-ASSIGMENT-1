@@ -7,7 +7,10 @@ import model.DrawPositionWorker;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -24,7 +27,7 @@ public class SimulationView {
      * Creates a view of the specified size (in pixels)
      */
     public SimulationView(int w, int h, Simulator simulator) {
-        frame = new VisualiserFrame(w, h,simulator);
+        frame = new VisualiserFrame(w, h, simulator);
     }
 
     public void display(ArrayList<Body> bodies, double vt, long iter, Boundary bounds) {
@@ -47,8 +50,8 @@ public class SimulationView {
             JButton btnStop = new JButton("STOP");
             btnStop.addActionListener(e -> simulator.setBtnClicked(false));
             panel = new VisualiserPanel(w, h);
-            mainJPanel.add(BorderLayout.SOUTH,btnJPanel);
-            mainJPanel.add(BorderLayout.CENTER,panel);
+            mainJPanel.add(BorderLayout.SOUTH, btnJPanel);
+            mainJPanel.add(BorderLayout.CENTER, panel);
             btnJPanel.add(btnStart);
             btnJPanel.add(btnStop);
             addWindowListener(new WindowAdapter() {

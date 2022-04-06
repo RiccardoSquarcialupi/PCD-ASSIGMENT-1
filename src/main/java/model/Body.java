@@ -1,12 +1,13 @@
 package model;
 
+import model.interfaces.BodyInterface;
 import res.InfiniteForceException;
 
 /*
  * This class represents a body
  *
  */
-public class Body {
+public class Body implements BodyInterface {
 
     private static final double REPULSIVE_CONST = 0.01;
     private static final double FRICTION_CONST = 1;
@@ -23,22 +24,27 @@ public class Body {
         this.mass = mass;
     }
 
+    @Override
     public double getMass() {
         return mass;
     }
 
+    @Override
     public P2d getPos() {
         return pos;
     }
 
+    @Override
     public V2d getVel() {
         return vel;
     }
 
+    @Override
     public int getId() {
         return id;
     }
 
+    @Override
     public boolean equals(Body b) {
         return b.id == id;
     }
@@ -49,6 +55,7 @@ public class Body {
      *
      * @param dt time elapsed
      */
+    @Override
     synchronized public void updatePos(double dt) {
         pos.sum(new V2d(vel).scalarMul(dt));
     }
@@ -59,6 +66,7 @@ public class Body {
      * @param acc instant acceleration
      * @param dt  time elapsed
      */
+    @Override
     public void updateVelocity(V2d acc, double dt) {
         vel.sum(new V2d(acc).scalarMul(dt));
     }
@@ -66,6 +74,7 @@ public class Body {
     /**
      * Change the velocity
      */
+    @Override
     public void changeVel(double vx, double vy) {
         vel.change(vx, vy);
     }
@@ -76,6 +85,7 @@ public class Body {
      * @param b the body which we calculate the distance from
      * @return the calculated distance
      */
+    @Override
     synchronized public double getDistanceFrom(Body b) {
         double dx = pos.getX() - b.getPos().getX();
         double dy = pos.getY() - b.getPos().getY();
@@ -89,6 +99,7 @@ public class Body {
      * @return
      * @throws InfiniteForceException
      */
+    @Override
     synchronized public V2d computeRepulsiveForceBy(Body b) throws InfiniteForceException {
         double dist = getDistanceFrom(b);
         if (dist > 0) {
@@ -107,6 +118,7 @@ public class Body {
     /**
      * Compute current friction force, given the current velocity
      */
+    @Override
     public V2d getCurrentFrictionForce() {
         return new V2d(vel).scalarMul(-FRICTION_CONST);
     }
@@ -117,6 +129,7 @@ public class Body {
      *
      * @param bounds
      */
+    @Override
     synchronized public void checkAndSolveBoundaryCollision(Boundary bounds) {
         double x = pos.getX();
         double y = pos.getY();
