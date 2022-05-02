@@ -8,18 +8,18 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.*;
 
 public class Simulator {
 
     public static void main(String[] args) throws InterruptedException, BrokenBarrierException {
         Simulator sim = new Simulator();
-        sim.execute(500000);
+        sim.execute(100000);
     }
 
     private final SimulationView viewer;
     private List<List<Body>> partitions = new LinkedList<>();
+    private ExecutorService executor;
     private CyclicBarrier barrier;
     private boolean shouldAwake = false;
     boolean btnClicked;
@@ -73,11 +73,11 @@ public class Simulator {
         double vt = 0;
         dt = 0.001;
         long iter = 0;
+        executor = new ThreadPoolExecutor(cores, cores, Long.MAX_VALUE, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
 
         //Verify.beginAtomic();
         for (var partition : partitions) {
-            var thread = new SimulatorSubTask(partition, this);
-            thread.start();
+            executor.execute(new SimulatorSubTask(partition, this));
         }
         //Verify.endAtomic();
         /* simulation loop */

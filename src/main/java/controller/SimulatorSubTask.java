@@ -12,7 +12,7 @@ import java.util.concurrent.Semaphore;
 
 import static gov.nasa.jpf.vm.Verify.println;
 
-public class SimulatorSubTask extends Thread{
+public class SimulatorSubTask implements Runnable{
 
     private final List<Body> bodies;
     private final Simulator master;
